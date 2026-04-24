@@ -1,0 +1,103 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-grad: linear-gradient(160deg, #fff5f5 0%, #ffe9ef 50%, #ffd6e2 100%);
+}
+
+html, body { height: 100%; }
+
+body {
+  background: var(--bg-grad);
+  background-attachment: fixed;
+  overflow-x: hidden;
+}
+
+::selection { background: #e86a8f; color: white; }
+
+@layer components {
+  .glass {
+    @apply bg-white/55 backdrop-blur-md border border-white/60;
+  }
+  .glass-strong {
+    @apply bg-white/80 backdrop-blur-md border border-white/70;
+  }
+  .card {
+    @apply glass-strong rounded-3xl shadow-soft;
+  }
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-medium text-white shadow-soft transition hover:-translate-y-0.5 hover:shadow-lift;
+    background: linear-gradient(120deg, #e86a8f 0%, #b189c9 100%);
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-medium text-ink glass transition hover:-translate-y-0.5;
+  }
+  .kicker {
+    @apply inline-block rounded-full bg-accent/10 px-3 py-1 text-[11px] uppercase tracking-[0.3em] text-accent;
+  }
+  .section-title {
+    @apply font-serif text-4xl sm:text-5xl md:text-6xl font-medium text-ink;
+  }
+}
+
+/* Shimmering gradient name */
+.shimmer-text {
+  background: linear-gradient(120deg, #e86a8f 0%, #b189c9 50%, #d8a75c 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shimmer 6s ease-in-out infinite;
+}
+@keyframes shimmer {
+  0%, 100% { background-position: 0% center; }
+  50% { background-position: 100% center; }
+}
+
+/* Soft blobs */
+.blob {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Floating heart layer */
+.hearts-layer { position: fixed; inset: 0; pointer-events: none; z-index: 1; overflow: hidden; }
+.heart {
+  position: absolute;
+  color: #e86a8f;
+  opacity: 0;
+  filter: drop-shadow(0 2px 6px rgba(232,106,143,0.35));
+  animation: heartFloat linear forwards;
+}
+@keyframes heartFloat {
+  0%   { transform: translateY(0) scale(0.6) rotate(0deg); opacity: 0; }
+  15%  { opacity: 0.85; }
+  100% { transform: translateY(-110vh) scale(1.1) rotate(20deg); opacity: 0; }
+}
+
+/* Fade-up utility */
+.fade-up { opacity: 0; transform: translateY(20px); animation: fadeUp 0.9s cubic-bezier(.22,1,.36,1) forwards; }
+.fade-up.d1 { animation-delay: .15s; }
+.fade-up.d2 { animation-delay: .3s; }
+.fade-up.d3 { animation-delay: .45s; }
+.fade-up.d4 { animation-delay: .6s; }
+.fade-up.d5 { animation-delay: .75s; }
+@keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+
+@keyframes heartBeat {
+  0%, 100% { transform: scale(1); }
+  15% { transform: scale(1.25); }
+  30% { transform: scale(1); }
+  45% { transform: scale(1.2); }
+}
+.beat { animation: heartBeat 1.4s ease-in-out infinite; display: inline-block; }
+
+/* Scrollbars */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: rgba(232,106,143,0.35); border-radius: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
