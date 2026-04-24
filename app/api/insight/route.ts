@@ -75,6 +75,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "unknown kind" }, { status: 400 });
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : "something went wrong";
+    console.error("[insight] error:", msg);
     return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

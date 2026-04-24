@@ -70,19 +70,26 @@ export default function CycleTracker({ editable = false }: { editable?: boolean 
   const ask = async () => {
     setLoadingAI(true);
     setInsight(null);
-    const r = await fetch("/api/insight", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ kind: "period" })
-    });
-    const d = await r.json();
-    setLoadingAI(false);
-    if (d.error) {
+    try {
+      const r = await fetch("/api/insight", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ kind: "period" })
+      });
+      const d = await r.json();
+      setLoadingAI(false);
+      if (d.error) {
+        console.error("[insight]", d.error);
+        setInsight("couldn't reach the ai just now. try again in a bit.");
+        return;
+      }
+      setSummary(d.summary ?? null);
+      setInsight(d.response ?? null);
+    } catch (e) {
+      setLoadingAI(false);
+      console.error("[insight] network", e);
       setInsight("couldn't reach the ai just now. try again in a bit.");
-      return;
     }
-    setSummary(d.summary ?? null);
-    setInsight(d.response ?? null);
   };
 
   const last = periods[0];

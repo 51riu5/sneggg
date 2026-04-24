@@ -1,7 +1,7 @@
 import type { DailyLog, PeriodLog } from "./types";
 
-const GEMINI_URL =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent";
+const GEMINI_BASE = "https://generativelanguage.googleapis.com/v1beta/models";
+const GEMINI_MODELS = ["gemini-flash-latest", "gemini-2.5-flash", "gemini-2.0-flash"];
 
 interface CycleSummary {
   averageCycleLength: number | null;
@@ -69,12 +69,9 @@ export function analyseCycle(periods: PeriodLog[]): CycleSummary {
   };
 }
 
-export async function callGemini(prompt: string): Promise<string> {
-  const key = process.env.GEMINI_API_KEY;
-  if (!key) {
-    throw new Error("GEMINI_API_KEY not set — get one free at https://aistudio.google.com/app/apikey");
-  }
-  const res = await fetch(`${GEMINI_URL}?key=${key}`, {
+async function tryGeminiModel(model: string, key: string, prompt: string): Promise<string> {
+  const url = `${GEMINI_BASE}/${model}:generateContent?key=${key}`;
+  const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -88,12 +85,38 @@ export async function callGemini(prompt: string): Promise<string> {
   });
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(`Gemini error ${res.status}: ${text}`);
+    const err = new Error(`Gemini ${model} ${res.status}: ${text}`) as Error & { status?: number };
+    err.status = res.status;
+    throw err;
   }
   const data = await res.json();
   const out = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!out) throw new Error("Gemini returned no content");
+  if (!out) throw new Error(`Gemini ${model} returned no content`);
   return out as string;
+}
+
+export async function callGemini(prompt: string): Promise<string> {
+  const key = process.env.GEMINI_API_KEY;
+  if (!key) {
+    throw new Error("GEMINI_API_KEY not set — get one free at https://aistudio.google.com/app/apikey");
+  }
+  const errors: string[] = [];
+  for (const model of GEMINI_MODELS) {
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        return await tryGeminiModel(model, key, prompt);
+      } catch (e) {
+        const err = e as Error & { status?: number };
+        errors.push(err.message);
+        if (err.status === 503 && attempt === 1) {
+          await new Promise((r) => setTimeout(r, 800));
+          continue;
+        }
+        break;
+      }
+    }
+  }
+  throw new Error(`All Gemini models failed. Last errors: ${errors.slice(-3).join(" | ")}`);
 }
 
 export function buildPeriodPrompt(summary: CycleSummary, periods: PeriodLog[], recentSymptoms: string[]): string {
