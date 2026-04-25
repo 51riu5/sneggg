@@ -4,7 +4,8 @@ const nextConfig = {
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "i.scdn.co" },
-      { protocol: "https", hostname: "open.spotify.com" }
+      { protocol: "https", hostname: "open.spotify.com" },
+      { protocol: "https", hostname: "*.supabase.co" }
     ]
   }
 };

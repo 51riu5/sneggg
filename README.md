@@ -191,6 +191,21 @@ snegu-app/
 
 ---
 
+## 11a. Photo memories + voice notes (migration 003)
+
+After migration 002, run **`supabase/migration_003_media.sql`** in the Supabase SQL Editor. This creates:
+
+- `memory` table (photo metadata)
+- `voice_note` table (voice clip metadata)
+- `media` storage bucket (public, where photo and audio files actually live)
+
+Once that's run, two new tabs appear in the app:
+
+- **memories** — drop in photos, each shows a random one on her dashboard each day
+- **voices** — record up to 60-second voice notes; the receiver gets a push and can listen
+
+No env vars needed for these — they use the existing Supabase storage.
+
 ## 11. Adding the new features (study room, tasks, push)
 
 ### a) Run the migration

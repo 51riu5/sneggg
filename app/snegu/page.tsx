@@ -3,6 +3,7 @@ import Spotify from "@/components/Spotify";
 import ReasonsCarousel from "@/components/ReasonsCarousel";
 import PushManager from "@/components/PushManager";
 import SharedTasks from "@/components/SharedTasks";
+import MemoryOfDay from "@/components/MemoryOfDay";
 
 export default function SneguHome() {
   return (
@@ -16,6 +17,8 @@ export default function SneguHome() {
           one gentle thing at a time. i'm right here with you.
         </p>
       </header>
+
+      <MemoryOfDay role="snegu" basePath="/snegu" />
 
       <PushManager role="snegu" />
 

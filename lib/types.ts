@@ -92,3 +92,25 @@ export interface PushSubscription {
   device_label: string | null;
   created_at: string;
 }
+
+export interface Memory {
+  id: string;
+  storage_path: string;
+  caption: string | null;
+  taken_on: string | null;
+  uploaded_by: Role;
+  pinned: boolean;
+  created_at: string;
+}
+
+export interface VoiceNote {
+  id: string;
+  storage_path: string;
+  duration_seconds: number | null;
+  from_user: Role;
+  to_user: Role;
+  caption: string | null;
+  seen: boolean;
+  played_at: string | null;
+  created_at: string;
+}

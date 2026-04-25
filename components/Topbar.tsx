@@ -10,6 +10,8 @@ interface Props {
 const snegLinks = [
   { href: "/snegu", label: "today" },
   { href: "/snegu/study", label: "study" },
+  { href: "/snegu/voices", label: "voices" },
+  { href: "/snegu/memories", label: "memories" },
   { href: "/snegu/calendar", label: "calendar" },
   { href: "/snegu/cycle", label: "cycle" },
   { href: "/snegu/notes", label: "letters" }
@@ -18,6 +20,8 @@ const snegLinks = [
 const ribtuLinks = [
   { href: "/ribtu", label: "her day" },
   { href: "/ribtu/study", label: "study" },
+  { href: "/ribtu/voices", label: "voices" },
+  { href: "/ribtu/memories", label: "memories" },
   { href: "/ribtu/calendar", label: "calendar" },
   { href: "/ribtu/cycle", label: "cycle" },
   { href: "/ribtu/notes", label: "send love" }
