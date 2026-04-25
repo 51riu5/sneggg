@@ -48,3 +48,47 @@ export interface AiInsight {
   response: string;
   created_at: string;
 }
+
+export interface SharedTask {
+  id: string;
+  title: string;
+  detail: string | null;
+  due_at: string | null;
+  created_by: Role;
+  assigned_to: Role | null;
+  done: boolean;
+  done_by: Role | null;
+  done_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface StudySession {
+  id: string;
+  mode: "pomodoro" | "free";
+  duration_seconds: number;
+  started_at: string | null;
+  paused_remaining_seconds: number | null;
+  is_running: boolean;
+  round: number;
+  who_last: Role | null;
+  meet_link: string | null;
+  updated_at: string;
+}
+
+export interface StudyPresence {
+  who: Role;
+  in_room: boolean;
+  cam_on: boolean;
+  last_seen: string;
+}
+
+export interface PushSubscription {
+  id: string;
+  who: Role;
+  endpoint: string;
+  p256dh: string;
+  auth: string;
+  device_label: string | null;
+  created_at: string;
+}

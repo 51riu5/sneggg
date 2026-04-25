@@ -1,5 +1,7 @@
 import HerDayLive from "@/components/HerDayLive";
 import QuickSendNote from "@/components/QuickSendNote";
+import PushManager from "@/components/PushManager";
+import SharedTasks from "@/components/SharedTasks";
 
 export default function RibtuHome() {
   return (
@@ -10,7 +12,12 @@ export default function RibtuHome() {
         <p className="font-serif italic text-ink-soft">live updates from her day. gentle presence, always.</p>
       </header>
 
+      <PushManager role="ribtu" />
+
       <HerDayLive />
+
+      <SharedTasks role="ribtu" />
+
       <QuickSendNote />
     </div>
   );

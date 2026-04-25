@@ -8,7 +8,7 @@ export default function Page() {
         <h1 className="font-serif text-4xl">little notes, back and forth</h1>
         <p className="font-serif italic text-ink-soft">every word from us, kept safe.</p>
       </header>
-      <NotesBoard />
+      <NotesBoard role="snegu" />
     </div>
   );
 }

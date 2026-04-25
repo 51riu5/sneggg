@@ -8,7 +8,7 @@ export default function Page() {
         <h1 className="font-serif text-4xl">words, back and forth</h1>
         <p className="font-serif italic text-ink-soft">kept safe. always.</p>
       </header>
-      <NotesBoard />
+      <NotesBoard role="ribtu" />
     </div>
   );
 }

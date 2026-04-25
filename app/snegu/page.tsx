@@ -1,6 +1,8 @@
 import DailyDashboard from "@/components/DailyDashboard";
 import Spotify from "@/components/Spotify";
 import ReasonsCarousel from "@/components/ReasonsCarousel";
+import PushManager from "@/components/PushManager";
+import SharedTasks from "@/components/SharedTasks";
 
 export default function SneguHome() {
   return (
@@ -15,7 +17,11 @@ export default function SneguHome() {
         </p>
       </header>
 
+      <PushManager role="snegu" />
+
       <DailyDashboard />
+
+      <SharedTasks role="snegu" />
 
       <div className="grid md:grid-cols-2 gap-6">
         <Spotify />

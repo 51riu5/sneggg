@@ -97,7 +97,18 @@ body {
 }
 .beat { animation: heartBeat 1.4s ease-in-out infinite; display: inline-block; }
 
-/* Scrollbars */
+/* Scrollbars (page) */
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-thumb { background: rgba(232,106,143,0.35); border-radius: 10px; }
 ::-webkit-scrollbar-track { background: transparent; }
+
+/* Chat scroll — guaranteed visible scrollbar */
+.chat-scroll {
+  overscroll-behavior: contain;
+}
+.chat-scroll::-webkit-scrollbar { width: 8px; }
+.chat-scroll::-webkit-scrollbar-thumb {
+  background: rgba(232,106,143,0.45);
+  border-radius: 8px;
+}
+.chat-scroll::-webkit-scrollbar-track { background: rgba(232,106,143,0.08); border-radius: 8px; }

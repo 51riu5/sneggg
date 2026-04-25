@@ -1,21 +1,25 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { formatDistanceToNow, parseISO } from "date-fns";
 import { supabase } from "@/lib/supabase";
-import type { LoveNote } from "@/lib/types";
+import type { LoveNote, Role } from "@/lib/types";
 
-export default function NotesBoard() {
+interface Props {
+  role: Role;
+}
+
+export default function NotesBoard({ role }: Props) {
   const [notes, setNotes] = useState<LoveNote[]>([]);
   const [body, setBody] = useState("");
   const [sending, setSending] = useState(false);
-  const endRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
-  const refresh = async () => {
+  const refresh = useCallback(async () => {
     const r = await fetch("/api/notes", { cache: "no-store" });
     const d = await r.json();
-    setNotes(d.notes ?? []);
-  };
+    setNotes((d.notes ?? []).slice().reverse());
+  }, []);
 
   useEffect(() => {
     refresh();
@@ -26,10 +30,12 @@ export default function NotesBoard() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [refresh]);
 
   useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: "smooth" });
+    const el = scrollRef.current;
+    if (!el) return;
+    el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
   }, [notes.length]);
 
   const send = async () => {
@@ -45,28 +51,44 @@ export default function NotesBoard() {
   };
 
   return (
-    <div className="card p-6 max-w-2xl mx-auto">
-      <div className="space-y-3 max-h-[55vh] overflow-y-auto pr-2 flex flex-col-reverse">
-        <div ref={endRef} />
-        {notes.map((n) => (
-          <div
-            key={n.id}
-            className={`rounded-2xl p-4 max-w-[85%] ${
-              n.from_user === "snegu"
-                ? "self-end bg-gradient-to-br from-accent to-accent-lav text-white"
-                : "self-start bg-white border border-accent/20"
-            }`}
-            style={{ alignSelf: n.from_user === "snegu" ? "flex-end" : "flex-start" }}
-          >
-            <p className="text-[10px] uppercase tracking-widest opacity-70">
-              {n.from_user === "ribtu" ? "ribtu" : "snegu"} · {formatDistanceToNow(parseISO(n.created_at), { addSuffix: true })}
-            </p>
-            <p className="font-serif text-lg leading-relaxed mt-1">{n.body}</p>
-          </div>
-        ))}
+    <div className="card p-4 sm:p-6 max-w-2xl mx-auto flex flex-col" style={{ height: "min(70vh, 640px)" }}>
+      <div
+        ref={scrollRef}
+        className="flex-1 min-h-0 overflow-y-auto pr-2 space-y-3 chat-scroll"
+        style={{ scrollbarWidth: "thin", scrollbarColor: "rgba(232,106,143,0.45) transparent" }}
+      >
+        {notes.length === 0 && (
+          <p className="text-center font-serif italic text-ink-soft py-8">
+            no letters yet — write the first one
+          </p>
+        )}
+        {notes.map((n) => {
+          const mine = n.from_user === role;
+          return (
+            <div
+              key={n.id}
+              className={`flex ${mine ? "justify-end" : "justify-start"}`}
+            >
+              <div
+                className={`rounded-2xl p-3 sm:p-4 max-w-[85%] ${
+                  mine
+                    ? "bg-gradient-to-br from-accent to-accent-lav text-white"
+                    : "bg-white border border-accent/20"
+                }`}
+              >
+                <p className="text-[10px] uppercase tracking-widest opacity-70">
+                  {mine ? "you" : n.from_user} · {formatDistanceToNow(parseISO(n.created_at), { addSuffix: true })}
+                </p>
+                <p className="font-serif text-base sm:text-lg leading-relaxed mt-1 break-words whitespace-pre-wrap">
+                  {n.body}
+                </p>
+              </div>
+            </div>
+          );
+        })}
       </div>
 
-      <div className="mt-5 flex gap-2">
+      <div className="mt-4 flex gap-2 shrink-0">
         <input
           value={body}
           onChange={(e) => setBody(e.target.value)}

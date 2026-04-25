@@ -73,6 +73,18 @@ SESSION_SECRET=some-long-random-string-32+chars
 GEMINI_API_KEY=AIzaSy...
 AI_PROVIDER=gemini
 NEXT_PUBLIC_SPOTIFY_PLAYLIST=6LUsXD61YZWpwPZCzx9UWB
+
+# Static Google Meet link (your personal "for later" room)
+NEXT_PUBLIC_MEET_LINK=https://meet.google.com/your-personal-room
+
+# Web push (browser notifications) — generate with: npx web-push generate-vapid-keys
+NEXT_PUBLIC_VAPID_PUBLIC_KEY=BKQ0w...
+VAPID_PRIVATE_KEY=...
+VAPID_SUBJECT=mailto:rishitmenon@gmail.com
+
+# Email addresses (used in scheduling labels)
+NEXT_PUBLIC_SNEGU_EMAIL=iamsnehask05@gmail.com
+NEXT_PUBLIC_RIBTU_EMAIL=rishitmenon@gmail.com
 ```
 
 To generate a `SESSION_SECRET`:
@@ -179,7 +191,48 @@ snegu-app/
 
 ---
 
-## 11. Troubleshooting
+## 11. Adding the new features (study room, tasks, push)
+
+### a) Run the migration
+
+Already ran `schema.sql`? Good. Now also run `supabase/migration_002_features.sql` once in the Supabase SQL Editor. It's idempotent (safe to re-run).
+
+### b) Generate VAPID keys (one-time)
+
+```bash
+cd snegu-app
+npx web-push generate-vapid-keys
+```
+
+Copy the two outputs:
+- **Public Key** → `NEXT_PUBLIC_VAPID_PUBLIC_KEY`
+- **Private Key** → `VAPID_PRIVATE_KEY`
+
+Set `VAPID_SUBJECT=mailto:your@email.com` (any reachable email).
+
+### c) Get a static Google Meet link
+
+1. Go to [meet.google.com](https://meet.google.com)
+2. Click **New meeting** → **Create a meeting for later**
+3. Copy the link (looks like `https://meet.google.com/abc-defg-hij`)
+4. Set `NEXT_PUBLIC_MEET_LINK` to it
+
+That same room is reusable forever — both of you click the same link, you join together.
+
+### d) On Vercel
+
+Add the same env vars in **Settings → Environment Variables**, then redeploy.
+
+### e) Enable push notifications on her phone
+
+1. Have her open the deployed site on her phone (Chrome/Safari)
+2. The "notifications" card on her dashboard has an **enable** button
+3. She accepts the browser permission prompt
+4. Reminders for meds, water, dinner, sleep will fire automatically — even when the app is closed
+
+The reminders are powered by a client-side tick that runs every 5 minutes whenever she has the site open in any tab. For 100% reliable reminders even when she has the site closed, you'd add a Vercel Cron job (free) that hits `/api/reminders/tick` every 15 min — let me know if you want that wired up.
+
+## 12. Troubleshooting
 
 - **"Gemini not working"** — make sure `GEMINI_API_KEY` is set in `.env.local` AND restarted `npm run dev`. On Vercel, check the Environment Variables page.
 - **"Realtime not updating"** — verify in Supabase dashboard → Database → Replication that realtime is on for `daily_log`, `period_log`, `love_note`.
