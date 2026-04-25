@@ -82,19 +82,19 @@ alter table public.notification_log   enable row level security;
 
 -- Permissive policies (app-level PIN auth handles security)
 do $$ begin
-  if not exists (select 1 from pg_policies where polname = 'allow shared_task' and tablename = 'shared_task') then
+  if not exists (select 1 from pg_policies where policyname = 'allow shared_task' and tablename = 'shared_task') then
     create policy "allow shared_task" on public.shared_task for all using (true) with check (true);
   end if;
-  if not exists (select 1 from pg_policies where polname = 'allow study_session' and tablename = 'study_session') then
+  if not exists (select 1 from pg_policies where policyname = 'allow study_session' and tablename = 'study_session') then
     create policy "allow study_session" on public.study_session for all using (true) with check (true);
   end if;
-  if not exists (select 1 from pg_policies where polname = 'allow study_presence' and tablename = 'study_presence') then
+  if not exists (select 1 from pg_policies where policyname = 'allow study_presence' and tablename = 'study_presence') then
     create policy "allow study_presence" on public.study_presence for all using (true) with check (true);
   end if;
-  if not exists (select 1 from pg_policies where polname = 'allow push_subscription' and tablename = 'push_subscription') then
+  if not exists (select 1 from pg_policies where policyname = 'allow push_subscription' and tablename = 'push_subscription') then
     create policy "allow push_subscription" on public.push_subscription for all using (true) with check (true);
   end if;
-  if not exists (select 1 from pg_policies where polname = 'allow notification_log' and tablename = 'notification_log') then
+  if not exists (select 1 from pg_policies where policyname = 'allow notification_log' and tablename = 'notification_log') then
     create policy "allow notification_log" on public.notification_log for all using (true) with check (true);
   end if;
 end $$;
