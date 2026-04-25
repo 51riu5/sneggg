@@ -38,23 +38,41 @@ export default function StudyRoom({ role }: Props) {
   const [busy, setBusy] = useState(false);
   const [chimed, setChimed] = useState(false);
   const meetLink = process.env.NEXT_PUBLIC_MEET_LINK ?? "";
+  const sessionRef = useRef<StudySession | null>(null);
 
   const refresh = useCallback(async () => {
-    const r = await fetch("/api/study", { cache: "no-store" });
-    const d = await r.json();
-    setSession(d.session ?? null);
-    setPresence(d.presence ?? []);
+    try {
+      const r = await fetch("/api/study", { cache: "no-store" });
+      if (!r.ok) return;
+      const d = await r.json();
+      sessionRef.current = d.session ?? null;
+      setSession(d.session ?? null);
+      setPresence(d.presence ?? []);
+    } catch {}
   }, []);
 
   useEffect(() => {
     refresh();
-    const ch = supabase
-      .channel("study")
+    const sessionChannel = supabase
+      .channel("study-session-live")
       .on("postgres_changes", { event: "*", schema: "public", table: "study_session" }, () => refresh())
+      .subscribe();
+    const presenceChannel = supabase
+      .channel("study-presence-live")
       .on("postgres_changes", { event: "*", schema: "public", table: "study_presence" }, () => refresh())
       .subscribe();
+    const pollIv = setInterval(refresh, 5000);
+
+    const onVisible = () => {
+      if (document.visibilityState === "visible") refresh();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+
     return () => {
-      supabase.removeChannel(ch);
+      supabase.removeChannel(sessionChannel);
+      supabase.removeChannel(presenceChannel);
+      clearInterval(pollIv);
+      document.removeEventListener("visibilitychange", onVisible);
     };
   }, [refresh]);
 
@@ -62,7 +80,7 @@ export default function StudyRoom({ role }: Props) {
     setRemaining(computeRemaining(session));
     if (!session?.is_running) return;
     const iv = setInterval(() => {
-      setRemaining(computeRemaining(session));
+      setRemaining(computeRemaining(sessionRef.current));
     }, 250);
     return () => clearInterval(iv);
   }, [session]);
@@ -115,21 +133,40 @@ export default function StudyRoom({ role }: Props) {
   }, []);
 
   const action = async (a: string, extra?: Record<string, unknown>) => {
+    if (busy) return;
     setBusy(true);
-    await fetch("/api/study", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: a, ...extra })
-    });
-    setBusy(false);
+    try {
+      const r = await fetch("/api/study", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: a, ...extra })
+      });
+      if (r.ok) {
+        const d = await r.json();
+        if (d.session) {
+          sessionRef.current = d.session;
+          setSession(d.session);
+        }
+      } else {
+        const text = await r.text();
+        console.error("[study action] failed:", a, r.status, text);
+      }
+    } catch (e) {
+      console.error("[study action] network", e);
+    } finally {
+      setBusy(false);
+    }
   };
 
   const sneg = presence.find((p) => p.who === "snegu");
   const ribtu = presence.find((p) => p.who === "ribtu");
+  const isPaused = !!(session && !session.is_running && typeof session.paused_remaining_seconds === "number");
   const totalDur = session?.is_running
     ? session.duration_seconds
-    : session?.paused_remaining_seconds ?? session?.duration_seconds ?? 1500;
-  const pct = totalDur > 0 ? (1 - remaining / totalDur) * 100 : 0;
+    : isPaused
+      ? (session?.paused_remaining_seconds ?? session?.duration_seconds ?? 1500)
+      : session?.duration_seconds ?? 1500;
+  const pct = totalDur > 0 ? Math.max(0, Math.min(100, (1 - remaining / totalDur) * 100)) : 0;
 
   return (
     <div className="space-y-6">
@@ -173,22 +210,22 @@ export default function StudyRoom({ role }: Props) {
 
         <div className="mt-5 flex flex-wrap justify-center gap-3">
           {session?.is_running ? (
-            <button onClick={() => action("pause")} disabled={busy} className="btn-primary">
-              pause
+            <button onClick={() => action("pause")} disabled={busy} className="btn-primary disabled:opacity-50">
+              {busy ? "…" : "pause"}
             </button>
-          ) : remaining > 0 && session?.paused_remaining_seconds ? (
-            <button onClick={() => action("resume")} disabled={busy} className="btn-primary">
-              resume
+          ) : isPaused && (session?.paused_remaining_seconds ?? 0) > 0 ? (
+            <button onClick={() => action("resume")} disabled={busy} className="btn-primary disabled:opacity-50">
+              {busy ? "…" : "resume"}
             </button>
           ) : (
-            <button onClick={() => action("start")} disabled={busy} className="btn-primary">
-              start
+            <button onClick={() => action("start")} disabled={busy} className="btn-primary disabled:opacity-50">
+              {busy ? "starting…" : "start"}
             </button>
           )}
-          <button onClick={() => action("reset", { duration_seconds: 1500 })} disabled={busy} className="btn-ghost">
+          <button onClick={() => action("reset", { duration_seconds: 1500 })} disabled={busy} className="btn-ghost disabled:opacity-50">
             reset
           </button>
-          <button onClick={() => action("next_round")} disabled={busy} className="btn-ghost">
+          <button onClick={() => action("next_round")} disabled={busy} className="btn-ghost disabled:opacity-50">
             next round
           </button>
         </div>
